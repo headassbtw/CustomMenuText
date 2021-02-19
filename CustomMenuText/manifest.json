@@ -1,0 +1,13 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
+  "id": "CustomMenuText",
+  "name": "CustomMenuText",
+  "author": "headassbtw",
+  "version": "3.1.2",
+  "description": "",
+  "gameVersion": "1.13.2",
+  "dependsOn": {
+    "BSIPA": "^4.0.5"
+  },
+  "features": []
+}
