@@ -1,0 +1,12 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+	<vertical>
+		<vertical>
+			<page-button event-click='TextList#PageUp' direction='Up'/>
+			<list id='TextList' expand-cell='true' select-cell='textSelect' list-width='45'/>
+			<page-button event-click='TextList#PageDown' direction='Down'/>
+		</vertical>
+		<horizontal>
+			<button text='Reload' on-click='refreshEntries'/>
+		</horizontal>
+	</vertical>
+</bg>
