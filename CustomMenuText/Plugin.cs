@@ -493,6 +493,8 @@ AUROS
         public void reloadFile()
         {
             allEntries = readFromFile(FILE_PATH);
+            Configuration.PluginConfig.Instance.SelectionType = selection_type;
+            Configuration.PluginConfig.Instance.SelectedEntry = choice;
         }
 
         /// <summary>
@@ -550,6 +552,8 @@ AUROS
         [OnExit]
         public void OnApplicationQuit()
         {
+            Configuration.PluginConfig.Instance.SelectionType = selection_type;
+            Configuration.PluginConfig.Instance.SelectedEntry = choice;
             SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
             SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }

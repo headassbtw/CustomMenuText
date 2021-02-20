@@ -91,6 +91,35 @@ namespace CustomMenuText.ViewControllers
 
             }
             textListData.tableView.ReloadData();
+
+            switch (Configuration.PluginConfig.Instance.SelectionType)
+            {
+                case 0:
+                    textListData.tableView.SelectCellWithIdx(0);
+                    break;
+                case 1:
+                    textListData.tableView.SelectCellWithIdx(1);
+                    break;
+                case 2:
+                    textListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.SelectedEntry + 2);
+                    break;
+            }
+        }
+
+        public void SelectCorrectCell(int selType, int choice)
+        {
+            switch (selType)
+            {
+                case 0:
+                    textListData.tableView.SelectCellWithIdx(0);
+                    break;
+                case 1:
+                    textListData.tableView.SelectCellWithIdx(1);
+                    break;
+                case 2:
+                    textListData.tableView.SelectCellWithIdx(choice + 2);
+                    break;
+            }
         }
     }
 }

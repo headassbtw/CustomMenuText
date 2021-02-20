@@ -8,8 +8,7 @@
   "gameVersion": "1.13.2",
   "dependsOn": {
     "BSIPA": "^4.0.5",
-    "BeatSaberMarkupLanguage": "^1.4.5",
-    "HMUI": "^0"
+    "BeatSaberMarkupLanguage": "^1.4.5"
   },
   "features": []
 }
