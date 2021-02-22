@@ -10,8 +10,6 @@ using BeatSaberMarkupLanguage.ViewControllers;
 using UnityEngine;
 using UnityEngine.UI;
 using HMUI;
-using System.Linq;
-using BeatSaberMarkupLanguage.ViewControllers;
 
 namespace CustomMenuText.ViewControllers
 {
