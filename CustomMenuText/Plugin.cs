@@ -53,8 +53,8 @@ namespace CustomMenuText
         public static Color MainColor = Color.red;
         public static Color BottomColor = new Color(0, 0.659f, 1);
 
-        public Config diConfig;
-        public Dictionary<string, DiColors.Config.ColorPair> colorPairs;
+        /*public Config diConfig;
+        public Dictionary<string, DiColors.Config.ColorPair> colorPairs;*/
         #region BSIPA Config
         //Uncomment to use BSIPA's config
         [Init]
@@ -75,7 +75,7 @@ namespace CustomMenuText
         }
         #endregion
 
-        public void getDi()
+        /*public void getDi()
         {
             diConfig = Config.GetConfigFor("DiColors");
         }
@@ -102,7 +102,7 @@ namespace CustomMenuText
                 
             }
             
-        }
+        }*/
         
 
         public static Plugin instance;
