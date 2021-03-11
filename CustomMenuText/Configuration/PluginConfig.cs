@@ -11,6 +11,7 @@ namespace CustomMenuText.Configuration
         public virtual int SelectionType { get; set; } = 0;
         public virtual int SelectedEntry { get; set; } = 0;
         public virtual bool UsingDiColors { get; set; } = true;
+        public virtual bool OnlyInMainMenu { get; set; } = true;
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).

@@ -2,7 +2,22 @@
 	<vertical>
 		<vertical>
 			<page-button event-click='TextList#PageUp' direction='Up'/>
-			<list id='TextList' expand-cell='true' select-cell='textSelect' list-width='45'/>
+			<custom-list id='TextList' select-cell='textSelect' contents='contents' vertical-fit='PreferredSize' list-width='45'>
+				<stack vertical-fit='PreferredSize' child-expand-height='false' >
+					<vertical pref-height='14' min-height='14' vertical-fit='PreferredSize'>
+						<horizontal horizontal-fit='PreferredSize'>
+							<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-right='10'/>
+							<vertical background='round-rect-panel' vertical-fit='PreferredSize' min-height='9' pref-height='9' padding='5' bg-color='#FFFFFF60'>
+								<vertical child-expand-width='false' spacing='-1' vertical-fit='Unconstrained'>
+									<text text='~text-top' id='topText' align='Center' word-wrapping="true"/>
+									<text text='~text-bottom' id='bottomText' align='Center' word-wrapping="true"/>
+								</vertical>
+							</vertical>
+							<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-left='10'/>
+						</horizontal>
+					</vertical>
+				</stack>
+			</custom-list>
 			<page-button event-click='TextList#PageDown' direction='Down'/>
 		</vertical>
 		<horizontal>

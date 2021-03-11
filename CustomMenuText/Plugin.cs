@@ -14,14 +14,19 @@ using System.Text;
 using System.Reflection;
 using System.Threading.Tasks;
 
+
+
 namespace CustomMenuText
 {
     [Plugin(RuntimeOptions.SingleStartInit)]
+
+
+    
+
     public class Plugin
     {
         public static int selection_type = 0;
         public static int choice = 0;
-        internal static bool DiColorFound = false;
 
         public static GameObject defaultLogo = new GameObject();
 
@@ -41,22 +46,64 @@ namespace CustomMenuText
             Log.Info("CustomMenuText initialized.");
         }
 
+        public static Color defaultMainColor = Color.red;
+        public static Color defaultBottomColor = new Color(0, 0.659f, 1);
+        public static Color diMainColor = Color.red;
+        public static Color diBottomColor = new Color(0, 0.659f, 1);
+        public static Color MainColor = Color.red;
+        public static Color BottomColor = new Color(0, 0.659f, 1);
+
+        public Config diConfig;
+        public Dictionary<string, DiColors.Config.ColorPair> colorPairs;
         #region BSIPA Config
         //Uncomment to use BSIPA's config
         [Init]
         public void InitWithConfig(Config conf)
         {
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
-            
+            /*if (Configuration.PluginConfig.Instance.UsingDiColors)
+            {
+                getDi();
+            }
+            refreshDi();*/
+
+           
+
             Log.Debug("Config loaded");
             selection_type = Configuration.PluginConfig.Instance.SelectionType;
             choice = Configuration.PluginConfig.Instance.SelectedEntry;
         }
         #endregion
+
+        public void getDi()
+        {
+            diConfig = Config.GetConfigFor("DiColors");
+        }
+
+        public void refreshDi()
+        {
+            if (Configuration.PluginConfig.Instance.UsingDiColors)
+            {
+                try
+                {
+                    colorPairs.TryGetValue("Beat", out DiColors.Config.ColorPair beatPair);
+                    colorPairs.TryGetValue("Saber", out DiColors.Config.ColorPair saberPair);
+                    diMainColor = beatPair.Color;
+                    diBottomColor = saberPair.Color;
+                    MainColor = diMainColor;
+                    BottomColor = diBottomColor;
+                }
+                catch
+                {
+                    getDi();
+                    refreshDi();
+                }
+                
+                
+            }
+            
+        }
         
-
-
-
 
         public static Plugin instance;
 
@@ -68,23 +115,17 @@ namespace CustomMenuText
         public static GameObject textPrefab;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
-        public static readonly Color defaultMainColor = Color.red;
-        public static readonly Color defaultBottomColor = new Color(0, 0.659f, 1);
+        public static readonly string[] EMPTY = { "", "" };
+        
 
-        public static Color DiTopColor = Color.red;
-        public static Color DiBottomColor = new Color(0, 0.5019608f, 1);
-
+        public static bool initalFunctionsFinished = false;
         public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.1.3
-# by Arti
+@"# Custom Menu Text v3.2.2
+# by Arti, heavily modified by headassbtw
 # Special Thanks: Kyle1413, Alphie
 #
 # Use # for comments!
 # Separate entries with empty lines; a random one will be picked each time the menu loads.
-# Appears just like in the vanilla game (except not quite because the vanilla logo is an image now):
-Beat
-Saber
-
 # Entries with a number of lines other than 2 won't be colored by default.
 # Color them yourself with formatting!
 <#FF0000>B<#0080FF>S
@@ -110,6 +151,9 @@ SABER
 
 BEET
 SABER
+
+<size=+5>OWO
+   <size=5>what's this?
 
 BAT
 SAVER
@@ -222,7 +266,7 @@ AUROS
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.1.2";
+        public string Version => "3.2.2";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -237,7 +281,8 @@ AUROS
             new GameObject("CustomMenuTextController").AddComponent<CustomMenuTextController>();
             instance = this;
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
+            BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu("Menu Text", "CustomMenuText.Configuration.settings.bsml", CustomMenuText.Configuration.CustomMenuTextSettingsUI.instance);
             Views.UICreator.CreateMenu();
         }
         public void YeetUpTheText()
@@ -246,28 +291,42 @@ AUROS
             {
                 case 0:
                     //default
-                    setText(DEFAULT_TEXT);
+                    setText(EMPTY);
+                    defaultLogo.SetActive(true);
+
                     break;
                 case 1:
                     //random
+                    defaultLogo.SetActive(false);
                     pickRandomEntry();
                     break;
                 case 2:
                     //pre-chosen
+                    defaultLogo.SetActive(false);
                     setText(allEntries[choice]);
                     break;
             }
         }
+        
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
+            if (Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText")?.transform.SetParent(defaultLogo.transform.parent.transform, true);
+            if (Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText-Bot")?.transform.SetParent(defaultLogo.transform.parent.transform, true);
+            if (!Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText")?.transform.SetParent(null, true);
+            if (!Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText-Bot")?.transform.SetParent(null, true);
+            //refreshDi();
+            if (mainText != null) mainText.color = MainColor;
+            if (bottomText != null) bottomText.color = BottomColor;
+            defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
+
+
 
             
 
             Log.Notice("Changed to scene " + arg1.name);
             if (arg1.name.Contains("Menu")) // Only run in menu scene
             {
-                _ = FindDiColors();
                 if (allEntries == null)
                 {
                     reloadFile();
@@ -279,6 +338,7 @@ AUROS
                 else
                 {
                     YeetUpTheText();
+                    
                 }
             }
         }
@@ -301,13 +361,27 @@ AUROS
             setText(allEntries[entryPicked]);
         }
 
-        private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
+        /*private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
+            defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
             if (arg0.name.Equals("MenuCore"))
             {
-                _ = FindDiColors();
+                if (allEntries == null)
+                {
+                    reloadFile();
+                }
+                if (allEntries.Count == 0)
+                {
+                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving original logo intact.");
+                }
+                else
+                {
+                    if (defaultLogo.activeInHierarchy) YeetUpTheText();
+                    System.Threading.Thread bob = new System.Threading.Thread(async () => await FindDiColors());
+                    bob.Start();
+                }
             }
-        }
+        }*/
 
         public static GameObject loadTextPrefab(string path)
         {
@@ -353,7 +427,6 @@ AUROS
 
                 // Strip comments (all lines beginning with #)
                 linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
-
                 // Collect entries, splitting on empty lines
                 List<string> currentEntry = new List<string>();
                 foreach (string line in linesInFile)
@@ -362,6 +435,14 @@ AUROS
                     {
                         entriesInFile.Add(currentEntry.ToArray());
                         currentEntry.Clear();
+                    }
+                    else if(line.Contains("<diColor1>"))
+                    {
+                        currentEntry.Add(line.Replace("<diColor1>", Tools.ColorToHex(diMainColor)));
+                    }
+                    else if (line.Contains("<diColor2>"))
+                    {
+                        currentEntry.Add(line.Replace("<diColor2>", Tools.ColorToHex(diBottomColor)));
                     }
                     else
                     {
@@ -423,8 +504,10 @@ AUROS
             if(FONT_PATH == null) { Plugin.Log.Critical("font file not found!"); }
             if (textPrefab == null) textPrefab = loadTextPrefab(FONT_PATH);
 
-            // Logo Top Pos : 0.63, 21.61, 24.82
-            // Logo Bottom Pos : 0, 17.38, 24.82
+            defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
+
+            // Logo Top Pos : 0.63, 18.61, 26.1
+            // Logo Bottom Pos : 0, 14, 26.1
 
 
             if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
@@ -443,20 +526,12 @@ AUROS
                 mainText.overflowMode = TextOverflowModes.Overflow;
                 mainText.enableWordWrapping = false;
                 textObj.SetActive(true);
+                if (Configuration.PluginConfig.Instance.OnlyInMainMenu) textObj.transform.SetParent(defaultLogo.transform.parent.transform, true);
             }
             mainText.rectTransform.position = new Vector3(0f, 18.61f, 26.1f);
 
-            switch (Configuration.PluginConfig.Instance.UsingDiColors)
-            {
-                case true:
-                    mainText.color = DiTopColor;
-                    break;
-                case false:
-                    mainText.color = defaultMainColor;
-                    break;
-            }
+            mainText.color = MainColor;
 
-            mainText.name = "CustomBeatText";
             mainText.text = "BEAT";
 
             if (bottomText == null) bottomText = GameObject.Find("CustomMenuText-Bot")?.GetComponent<TextMeshPro>();
@@ -475,47 +550,20 @@ AUROS
                 bottomText.overflowMode = TextOverflowModes.Overflow;
                 bottomText.enableWordWrapping = false;
                 textObj2.SetActive(true);
+                if(Configuration.PluginConfig.Instance.OnlyInMainMenu) textObj2.transform.SetParent(defaultLogo.transform.parent.transform, true);
+
             }
             bottomText.rectTransform.position = new Vector3(0f, 14f, 26.1f);
-            switch (Configuration.PluginConfig.Instance.UsingDiColors)
-            {
-                case true:
-                    bottomText.color = DiBottomColor;
-                    break;
-                case false:
-                    bottomText.color = defaultBottomColor;
-                    break;
-            }
-            bottomText.name = "CustomSaberText";
+            bottomText.color = BottomColor;
             bottomText.text = "SABER";
 
             
 
             // Destroy Default Logo
-            defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
-            if (defaultLogo != null) defaultLogo.SetActive(false);
+
+            //if (defaultLogo != null) defaultLogo.SetActive(false);
         }
 
-        public async Task FindDiColors()
-        {
-            //find default logo, for DiColors
-            await Task.Delay(2500);
-            GameObject topLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "BatLogo").FirstOrDefault();
-            GameObject bottomLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "SaberLogo").FirstOrDefault();
-
-            SpriteRenderer topSprite = (SpriteRenderer)topLogo.GetComponent(typeof(SpriteRenderer));
-            SpriteRenderer bottomSprite = (SpriteRenderer)bottomLogo.GetComponent(typeof(SpriteRenderer));
-            Plugin.Log.Notice("color yeet " + topSprite.color.ToString());
-            Plugin.Log.Notice("color yeet 2 " + bottomSprite.color.ToString());
-            DiTopColor = topSprite.color;
-            DiBottomColor = bottomSprite.color;
-            Plugin.Log.Notice("found DiColors");
-            Plugin.Log.Notice("color " + DiTopColor);
-            Plugin.Log.Notice("color " + DiBottomColor);
-            DiColorFound = true;
-            replaceLogo();
-            YeetUpTheText();
-        }
 
 
 
@@ -625,7 +673,7 @@ AUROS
             Configuration.PluginConfig.Instance.SelectionType = selection_type;
             Configuration.PluginConfig.Instance.SelectedEntry = choice;
             SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
-            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+            //SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }
 
         public void OnLevelWasLoaded(int level)
