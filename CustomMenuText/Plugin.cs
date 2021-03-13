@@ -324,7 +324,7 @@ AUROS
 
             
 
-            Log.Notice("Changed to scene " + arg1.name);
+            //Log.Notice("Changed to scene " + arg1.name);
             if (arg1.name.Contains("Menu")) // Only run in menu scene
             {
                 if (allEntries == null)
