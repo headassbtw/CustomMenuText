@@ -206,9 +206,10 @@ namespace CustomMenuText.ViewControllers
         public override string ResourceName => "CustomMenuText.Views.TextSelector.TextSelector.bsml";
         
         [UIComponent("TextList")] public CustomCellListTableData textListData;
+        [UIComponent("FontList")] public CustomListTableData fontListData = new CustomListTableData();
         [UIValue("contents")] public List<object> CellList = new List<object>();
         [UIAction("textSelect")]
-        public void Select(TableView _, Cell cell)
+        public void textSelect(TableView _, Cell cell)
         {
             int row2 = 0;
             int row = CellList.IndexOf(cell);
@@ -241,6 +242,16 @@ namespace CustomMenuText.ViewControllers
         }
         public Cell random = new Cell("Random");
         public Cell defaultt = new Cell("Default");
+        [UIAction("fontSelect")]
+        public void fontSelect(TableView _, int row)
+        {
+            //int row = fontListData.data.IndexOf(cell);
+            Configuration.PluginConfig.Instance.Font = row;
+            Plugin.textPrefab = Plugin.Fonts[row];
+            Plugin.replaceLogo();
+            Plugin.instance.YeetUpTheText();
+        }
+
 
         [UIAction("refreshEntries")]
         public void ReloadEntries()
@@ -261,6 +272,7 @@ namespace CustomMenuText.ViewControllers
             string line1 = "";
             string line2 = "";
             CellList.Clear();
+            fontListData.data.Clear();
             CellList.Add(defaultt);
             CellList.Add(random);
 
@@ -309,8 +321,24 @@ namespace CustomMenuText.ViewControllers
                 CellList.Add(toAdd);
 
             }
-            textListData.tableView.ReloadData();
 
+            foreach (var font in Plugin.FontNames)
+            {
+                CustomListTableData.CustomCellInfo fontCell;
+                if (font == Plugin.FontNames[0] || font == Plugin.FontNames[1])
+                {
+                    fontCell = new CustomListTableData.CustomCellInfo(font, "Built-In");
+                    fontListData.data.Add(fontCell);
+                }
+                else
+                {
+                    fontCell = new CustomListTableData.CustomCellInfo(font);
+                    fontListData.data.Add(fontCell);
+                }
+            }
+
+            textListData.tableView.ReloadData();
+            fontListData.tableView.ReloadData();
             switch (Configuration.PluginConfig.Instance.SelectionType)
             {
                 case 0:

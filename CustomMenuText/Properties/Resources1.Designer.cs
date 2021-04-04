@@ -69,5 +69,13 @@ namespace CustomMenuText.Properties {
                 return ((byte[])(obj));
             }
         }
+        internal static byte[] Beon
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("Beon", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
