@@ -207,6 +207,7 @@ namespace CustomMenuText.ViewControllers
         
         [UIComponent("TextList")] public CustomCellListTableData textListData;
         [UIComponent("FontList")] public CustomListTableData fontListData = new CustomListTableData();
+        [UIComponent("ImgList")] public CustomListTableData imgListData = new CustomListTableData();
         [UIValue("contents")] public List<object> CellList = new List<object>();
         [UIAction("textSelect")]
         public void textSelect(TableView _, Cell cell)
@@ -251,7 +252,11 @@ namespace CustomMenuText.ViewControllers
             Plugin.replaceLogo();
             Plugin.instance.YeetUpTheText();
         }
-
+        [UIAction("imgSelect")]
+        public void imgSelect(TableView _, int row)
+        {
+            Tools.ReplaceLogos(ImageManager.ImageChunks[row]);
+        }
 
         [UIAction("refreshEntries")]
         public void ReloadEntries()
@@ -273,6 +278,7 @@ namespace CustomMenuText.ViewControllers
             string line2 = "";
             CellList.Clear();
             fontListData.data.Clear();
+            imgListData.data.Clear();
             CellList.Add(defaultt);
             CellList.Add(random);
 
@@ -337,8 +343,21 @@ namespace CustomMenuText.ViewControllers
                 }
             }
 
+            foreach(var imageChunk in ImageManager.ImageChunks)
+            {
+                string yes;
+                if (!imageChunk.E)
+                    yes = "with Flickering E";
+                else
+                    yes = "";
+                var imgCell = new CustomListTableData.CustomCellInfo(imageChunk.path.Substring(Plugin.instance.IMG_PATH.Length), yes);
+                imgListData.data.Add(imgCell);
+            }
+
+
             textListData.tableView.ReloadData();
             fontListData.tableView.ReloadData();
+            imgListData.tableView.ReloadData();
             switch (Configuration.PluginConfig.Instance.SelectionType)
             {
                 case 0:

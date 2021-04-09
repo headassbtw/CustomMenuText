@@ -110,6 +110,8 @@ namespace CustomMenuText
 
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
+
+        public string IMG_PATH;
         // path to load the font prefab from
         private const string FONT_PATH = "NeonTubes";
         // prefab to instantiate when creating the TextMeshPros
@@ -281,8 +283,15 @@ AUROS
         [OnStart]
         public void OnApplicationStart()
         {
+            IMG_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\";
+
+            InitializeImageFolder();
+            ImageManager.FindOGLogo();
+            ImageManager.PathToChunks(IMG_PATH);
+            
             new GameObject("CustomMenuTextController").AddComponent<CustomMenuTextController>();
             instance = this;
+            
             FirstTimeFontLoad();
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
@@ -290,6 +299,18 @@ AUROS
             Views.UICreator.CreateMenu();
             
         }
+
+        void InitializeImageFolder()
+        {
+            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText") + "\\"))
+                Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText") + "\\");
+            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\"))
+                Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\");
+            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\"))
+                    Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\");
+        }
+
+
         public void YeetUpTheText()
         {
             switch (Configuration.PluginConfig.Instance.SelectionType)
@@ -366,27 +387,7 @@ AUROS
             setText(allEntries[entryPicked]);
         }
 
-        /*private void SceneManager_sceneLoaded(Scene arg0, LoadSceneMode arg1)
-        {
-            defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
-            if (arg0.name.Equals("MenuCore"))
-            {
-                if (allEntries == null)
-                {
-                    reloadFile();
-                }
-                if (allEntries.Count == 0)
-                {
-                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving original logo intact.");
-                }
-                else
-                {
-                    if (defaultLogo.activeInHierarchy) YeetUpTheText();
-                    System.Threading.Thread bob = new System.Threading.Thread(async () => await FindDiColors());
-                    bob.Start();
-                }
-            }
-        }*/
+        
 
         public static void FirstTimeFontLoad()
         {

@@ -40,9 +40,9 @@
     <DisableZipRelease>True</DisableZipRelease>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BSML, Version=1.4.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <Private>False</Private>
+    <Reference Include="BSML">
       <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
+      <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="IPA.Loader, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\SettingsController.cs" />
+    <Compile Include="ImageManager.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="CustomMenuTextController.cs" />

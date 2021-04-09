@@ -1,34 +1,41 @@
-﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
-	<vertical>
-		<horizontal>
-			<vertical>
-				<page-button event-click='TextList#PageUp' direction='Up'/>
-				<custom-list id='TextList' select-cell='textSelect' contents='contents' vertical-fit='PreferredSize' list-width='45'>
-					<stack vertical-fit='PreferredSize' child-expand-height='false' >
-						<vertical pref-height='14' min-height='14' vertical-fit='PreferredSize'>
-							<horizontal horizontal-fit='PreferredSize'>
-								<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-right='10'/>
-								<vertical background='round-rect-panel' vertical-fit='PreferredSize' min-height='9' pref-height='9' padding='5' bg-color='#FFFFFF60'>
-									<vertical child-expand-width='false' spacing='-1' vertical-fit='Unconstrained'>
-										<text text='~text-top' id='topText' align='Center' word-wrapping="true"/>
-										<text text='~text-bottom' id='bottomText' align='Center' word-wrapping="true"/>
-									</vertical>
+﻿<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
+	<horizontal pref-width="100" horizontal-fit="PreferredSize">
+		<text text="s" align="Center" font-size="7" />
+		<tab-selector tab-tag="yo" />
+	</horizontal>
+	<horizontal>
+		<vertical>
+			<page-button event-click='TextList#PageUp' direction='Up'/>
+			<custom-list id='TextList' select-cell='textSelect' contents='contents' vertical-fit='PreferredSize' list-width='45'>
+				<stack vertical-fit='PreferredSize' child-expand-height='false' >
+					<vertical pref-height='14' min-height='14' vertical-fit='PreferredSize'>
+						<horizontal horizontal-fit='PreferredSize'>
+							<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-right='10'/>
+							<vertical background='round-rect-panel' vertical-fit='PreferredSize' min-height='9' pref-height='9' padding='5' bg-color='#FFFFFF60'>
+								<vertical child-expand-width='false' spacing='-1' vertical-fit='Unconstrained'>
+									<text text='~text-top' id='topText' align='Center' word-wrapping="true"/>
+									<text text='~text-bottom' id='bottomText' align='Center' word-wrapping="true"/>
 								</vertical>
-								<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-left='10'/>
-							</horizontal>
-						</vertical>
-					</stack>
-				</custom-list>
-				<page-button event-click='TextList#PageDown' direction='Down'/>
-			</vertical>
-			<vertical>
-				<page-button event-click='FontList#PageUp' direction='Up'/>
-				<list id='FontList' select-cell='fontSelect' vertical-fit='PreferredSize' list-width='45'/>
-				<page-button event-click='FontList#PageDown' direction='Down'/>
-			</vertical>
-		</horizontal>
-		<horizontal>
-			<button text='Reload' on-click='refreshEntries'/>
-		</horizontal>
-	</vertical>
-</bg>
+							</vertical>
+							<background background='round-rect-panel' tags='hovered' pref-width='9' pref-height='9' min-width='9' pad-left='10'/>
+						</horizontal>
+					</vertical>
+				</stack>
+			</custom-list>
+			<page-button event-click='TextList#PageDown' direction='Down'/>
+		</vertical>
+		<vertical>
+			<page-button event-click='FontList#PageUp' direction='Up'/>
+			<list id='FontList' select-cell='fontSelect' vertical-fit='PreferredSize' list-width='45'/>
+			<page-button event-click='FontList#PageDown' direction='Down'/>
+		</vertical>
+		<vertical>
+			<page-button event-click='ImgList#PageUp' direction='Up'/>
+			<list id='ImgList' select-cell='imgSelect' vertical-fit='PreferredSize' list-width='45'/>
+			<page-button event-click='ImgList#PageDown' direction='Down'/>
+		</vertical>
+	</horizontal>
+	<horizontal>
+		<button text='Reload' on-click='refreshEntries'/>
+	</horizontal>
+</vertical>
