@@ -72,7 +72,7 @@ namespace CustomMenuText
 
             Log.Debug("Config loaded");
             selection_type = Configuration.PluginConfig.Instance.SelectionType;
-            choice = Configuration.PluginConfig.Instance.SelectedEntry;
+            choice = Configuration.PluginConfig.Instance.SelectedTextEntry;
         }
         #endregion
 
@@ -111,15 +111,14 @@ namespace CustomMenuText
         // path to the file to load text from
         private const string FILE_PATH = "/UserData/CustomMenuText.txt";
 
-        public string IMG_PATH;
-        // path to load the font prefab from
-        private const string FONT_PATH = "NeonTubes";
+        public static string IMG_PATH = null;
+        public static string FONT_PATH = null;
         // prefab to instantiate when creating the TextMeshPros
         public static GameObject textPrefab;
         // used if we can't load any custom entries
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
         public static readonly string[] EMPTY = { "", "" };
-        
+        public static string[] CURRENT_TEXT = { "FUCKIN", "BEES" };
 
         public static bool initalFunctionsFinished = false;
         public const string DEFAULT_CONFIG =
@@ -267,8 +266,6 @@ AUROS
 
         // caches entries loaded from the file so we don't need to do IO every time the menu loads
         public static List<string[]> allEntries = null;
-        public static GameObject[] Fonts = null;
-        public static string[] FontNames = null;
 
         public string Name => "Custom Menu Text";
         public string Version => "3.2.2";
@@ -284,15 +281,14 @@ AUROS
         public void OnApplicationStart()
         {
             IMG_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\";
-
+            FONT_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\";
             InitializeImageFolder();
-            ImageManager.FindOGLogo();
-            ImageManager.PathToChunks(IMG_PATH);
+            ImageManager.ImgInit();
             
             new GameObject("CustomMenuTextController").AddComponent<CustomMenuTextController>();
             instance = this;
             
-            FirstTimeFontLoad();
+            FontManager.FirstTimeFontLoad();
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
             //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
             BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu("Menu Text", "CustomMenuText.Configuration.settings.bsml", CustomMenuText.Configuration.CustomMenuTextSettingsUI.instance);
@@ -304,10 +300,10 @@ AUROS
         {
             if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText") + "\\"))
                 Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText") + "\\");
-            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\"))
-                Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\");
-            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\"))
-                    Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\");
+            if (!Directory.Exists(FONT_PATH))
+                Directory.CreateDirectory(FONT_PATH);
+            if (!Directory.Exists(IMG_PATH))
+                    Directory.CreateDirectory(IMG_PATH);
         }
 
 
@@ -334,6 +330,12 @@ AUROS
             }
         }
         
+        public static void ApplyFont()
+        {
+            GameObject.Destroy(textPrefab);
+            Plugin.replaceLogo();
+            setText(CURRENT_TEXT);
+        }
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
         {
@@ -389,152 +391,10 @@ AUROS
 
         
 
-        public static void FirstTimeFontLoad()
-        {
-            string dirPath = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\";
-            #region inbuilt fonts
-            List<GameObject> tempFonts = new List<GameObject>();
-            List<string> tempNames = new List<string>();
-            Stream ntf = Assembly.GetExecutingAssembly().GetManifestResourceStream("CustomMenuText.Fonts.NeonTubes");
-            Stream bf = Assembly.GetExecutingAssembly().GetManifestResourceStream("CustomMenuText.Fonts.Beon");
-            AssetBundle neonBundle = AssetBundle.LoadFromStream(ntf);
-            GameObject NeonTubesPrefab = neonBundle.LoadAsset<GameObject>("Text");
-            NeonTubesPrefab.name = "NeonTubes";
-            tempFonts.Add(NeonTubesPrefab);
-            tempNames.Add("Neon Tubes 2");
-            ntf.Close();
-            neonBundle.Unload(false);
-            AssetBundle beonBundle = AssetBundle.LoadFromStream(bf);
-            GameObject BeonPrefab = beonBundle.LoadAsset<GameObject>("Text");
-            BeonPrefab.name = "Beon";
-            tempFonts.Add(BeonPrefab);
-            tempNames.Add("Beon");
-            bf.Close();
-            AssetBundle.Destroy(beonBundle);
-            beonBundle.Unload(false);
-            #endregion
-
-            Plugin.Log.Notice("Searching " + dirPath + " For Font Files");
-            var fonts = Directory.GetFiles(dirPath);
-            Plugin.Log.Notice(fonts.Length + " External Fonts");
-            if(fonts.Length > 0)
-            {
-                Plugin.Log.Notice("First Font: " + fonts[0]);
-                Plugin.Log.Notice("First Font: " + fonts[0].Substring(dirPath.Length));
-                for (int i = 0; i < fonts.Length; i++)
-                {
-                    tempNames.Add(fonts[i].Substring(dirPath.Length));
-                    Plugin.Log.Notice("Adding font " + fonts[i] + " " + i);
-
-                    GameObject prefab;
-                    AssetBundle fontBundle = AssetBundle.LoadFromFile(fonts[i]);
-                    prefab = fontBundle.LoadAsset<GameObject>("Text");
-                    prefab.name = fonts[i].Substring(dirPath.Length);
-                    tempFonts.Add(prefab);
-                    AssetBundle.Destroy(fontBundle);
-                    fontBundle.Unload(false);
-
-                }
-                
-            }
-            FontNames = tempNames.ToArray();
-            Fonts = tempFonts.ToArray();
-            Plugin.Log.Info(FontNames.Length + " Total Font names");
-            Plugin.Log.Info(Fonts.Length + " Total Fonts");
-        }
+        
 
 
-        public static GameObject loadTextPrefab(string font)
-        {
-            GameObject prefab = null;
-            string fontPath = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\" + font;
-            if (!File.Exists(fontPath))
-            {
-                Log.Warn("Font Not Found, will be taken care of soon");
-            }
-            try {
-                AssetBundle fontBundle = AssetBundle.LoadFromFile(fontPath);
-                //prefab = fontBundle.LoadAsset<GameObject>("Text");
-            }
-            catch (NullReferenceException) {
-                Log.Warn("No text prefab found in the provided AssetBundle! Using NeonTubes.");
-                AssetBundle beonBundle = AssetBundle.LoadFromMemory(Properties.Resources.NeonTubes);
-                //prefab = beonBundle.LoadAsset<GameObject>("Text");
-            }
-
-            return prefab;
-        }
-
-        public static List<string[]> readFromFile(string relPath)
-        {
-            List<string[]> entriesInFile = new List<string[]>();
-
-            // Look for the custom text file
-            string gameDirectory = Environment.CurrentDirectory;
-            gameDirectory = gameDirectory.Replace('\\', '/');
-            if (File.Exists(gameDirectory + relPath))
-            {
-                var linesInFile = File.ReadLines(gameDirectory + relPath);
-
-                // Strip comments (all lines beginning with #)
-                linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
-                // Collect entries, splitting on empty lines
-                List<string> currentEntry = new List<string>();
-                foreach (string line in linesInFile)
-                {
-                    if (line == "")
-                    {
-                        entriesInFile.Add(currentEntry.ToArray());
-                        currentEntry.Clear();
-                    }
-                    else if(line.Contains("<diColor1>"))
-                    {
-                        currentEntry.Add(line.Replace("<diColor1>", Tools.ColorToHex(diMainColor)));
-                    }
-                    else if (line.Contains("<diColor2>"))
-                    {
-                        currentEntry.Add(line.Replace("<diColor2>", Tools.ColorToHex(diBottomColor)));
-                    }
-                    else
-                    {
-                        currentEntry.Add(line);
-                    }
-                }
-                if (currentEntry.Count != 0)
-                {
-                    // in case the last entry doesn't end in a newline
-                    entriesInFile.Add(currentEntry.ToArray());
-                }
-            }
-            else
-            {
-                // No custom text file found!
-                // Create the file and populate it with the default config
-                try
-                {
-                    using (FileStream fs = File.Create(gameDirectory + relPath))
-                    {
-                        Byte[] info = new UTF8Encoding(true).GetBytes(DEFAULT_CONFIG
-                            // normalize newlines to CRLF
-                            .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
-                        fs.Write(info, 0, info.Length);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[CustomMenuText] No custom text file found, and an error was encountered trying to generate a default one!");
-                    Console.WriteLine("[CustomMenuText] Error:");
-                    Console.WriteLine(ex);
-                    Console.WriteLine("[CustomMenuText] To use this plugin, manually create the file " + relPath + " in your Beat Saber install directory.");
-                    return entriesInFile;
-                }
-                // File was successfully created; load from it with a recursive call.
-                return readFromFile(relPath);
-            }
-
-            return entriesInFile;
-        }
-
+        
         /// <summary>
         /// Replaces the logo in the main menu (which is an image and not text
         /// as of game version 0.12.0) with an editable TextMeshPro-based
@@ -549,18 +409,16 @@ AUROS
         public static void replaceLogo()
         {
             // Since 0.13.0, we have to create our TextMeshPros differently! You can't change the font at runtime, so we load a prefab with the right font from an AssetBundle. This has the side effect of allowing for custom fonts, an oft-requested feature.
-            if(FONT_PATH == null) { Plugin.Log.Critical("font file not found!"); }
             if(textPrefab == null)
             {
-                FirstTimeFontLoad();
-                textPrefab = Fonts[Configuration.PluginConfig.Instance.Font];
+                textPrefab = FontManager.FontList[Configuration.PluginConfig.Instance.Font].prefab;
             } 
 
             defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
 
             // Logo Top Pos : 0.63, 18.61, 26.1
             // Logo Bottom Pos : 0, 14, 26.1
-            if (mainText != null)
+            /*if (mainText != null)
             {
                 GameObject.Destroy(GameObject.Find("CustomMenuText"));
                 GameObject.Destroy(mainText);
@@ -572,7 +430,7 @@ AUROS
                 GameObject.Destroy(bottomText);
                 bottomText = null;
             }
-
+            */
             //if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
             //if (mainText == null)
             {
@@ -641,7 +499,7 @@ AUROS
         {
             // Set up the replacement logo
             replaceLogo();
-
+            CURRENT_TEXT = lines;
             if (lines.Length == 2)
             {
                 mainText.text = lines[0];
@@ -667,9 +525,9 @@ AUROS
 
         public void reloadFile()
         {
-            allEntries = readFromFile(FILE_PATH);
+            allEntries = FileUtils.readFromFile(FILE_PATH);
             Configuration.PluginConfig.Instance.SelectionType = selection_type;
-            Configuration.PluginConfig.Instance.SelectedEntry = choice;
+            Configuration.PluginConfig.Instance.SelectedTextEntry = choice;
         }
 
         /// <summary>
@@ -728,7 +586,7 @@ AUROS
         public void OnApplicationQuit()
         {
             Configuration.PluginConfig.Instance.SelectionType = selection_type;
-            Configuration.PluginConfig.Instance.SelectedEntry = choice;
+            Configuration.PluginConfig.Instance.SelectedTextEntry = choice;
             SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
             //SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }

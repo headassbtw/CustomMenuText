@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\SettingsController.cs" />
+    <Compile Include="FontManager.cs" />
     <Compile Include="ImageManager.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />

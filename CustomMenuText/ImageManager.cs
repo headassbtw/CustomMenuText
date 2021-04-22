@@ -13,6 +13,12 @@ namespace CustomMenuText
         public static List<String> ChunkPaths = new List<String>();
         public static List<CustomTypes.LogoImages> ImageChunks = new List<CustomTypes.LogoImages>();
 
+        public static void ImgInit()
+        {
+            FindOGLogo();
+            PathToChunks(Plugin.IMG_PATH);
+        }
+
         public static void FindOGLogo()
         {
             CustomTypes.LogoImages li = new CustomTypes.LogoImages();
@@ -20,7 +26,7 @@ namespace CustomMenuText
             li.BatLogo = Tools.GetTexture(CustomTypes.logo.bat);
             li.E = Tools.GetTexture(CustomTypes.logo.a);
             li.SaberLogo = Tools.GetTexture(CustomTypes.logo.saber);
-            li.path = Plugin.instance.IMG_PATH + "Default";
+            li.name = "Default";
             ImageChunks.Add(li);
         }
 
@@ -34,7 +40,7 @@ namespace CustomMenuText
                 }
                 catch (NullReferenceException)
                 {
-                    Plugin.Log.Notice("No Image Chunks To Load!");
+                    Plugin.Log.Notice("[ImageManager] No Image Chunks To Load!");
                     ImageChunks.Add(new CustomTypes.LogoImages(null, null, null, null, false));
                 }
             }

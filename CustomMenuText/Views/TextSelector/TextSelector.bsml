@@ -36,6 +36,8 @@
 		</vertical>
 	</horizontal>
 	<horizontal>
-		<button text='Reload' on-click='refreshEntries'/>
+		<button text='Reload Text' on-click='refreshTextEntries'/>
+		<button text='Reload Fonts' on-click='refreshFontEntries'/>
+		<button text='Reload Images' on-click='refreshImageEntries'/>
 	</horizontal>
 </vertical>

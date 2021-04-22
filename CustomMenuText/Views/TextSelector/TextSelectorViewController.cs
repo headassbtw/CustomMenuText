@@ -236,7 +236,7 @@ namespace CustomMenuText.ViewControllers
                 Plugin.selection_type = 2;
                 Plugin.choice = row2;
                 Configuration.PluginConfig.Instance.SelectionType = 2;
-                Configuration.PluginConfig.Instance.SelectedEntry = row2;
+                Configuration.PluginConfig.Instance.SelectedTextEntry = row2;
                 Plugin.instance.YeetUpTheText();
             }
             
@@ -248,9 +248,7 @@ namespace CustomMenuText.ViewControllers
         {
             //int row = fontListData.data.IndexOf(cell);
             Configuration.PluginConfig.Instance.Font = row;
-            Plugin.textPrefab = Plugin.Fonts[row];
-            Plugin.replaceLogo();
-            Plugin.instance.YeetUpTheText();
+            Plugin.ApplyFont();
         }
         [UIAction("imgSelect")]
         public void imgSelect(TableView _, int row)
@@ -258,27 +256,39 @@ namespace CustomMenuText.ViewControllers
             Tools.ReplaceLogos(ImageManager.ImageChunks[row]);
         }
 
-        [UIAction("refreshEntries")]
-        public void ReloadEntries()
+        [UIAction("refreshTextEntries")]
+        public void ReloadTextEntries()
         {
             Plugin.instance.reloadFile();
-            SetupList();
+            SetupTextList();
+        }
+        [UIAction("refreshFontEntries")]
+        public void ReloadFontEntries()
+        {
+            FontManager.FirstTimeFontLoad();
+            SetupFontList();
+        }
+        [UIAction("refreshImageEntries")]
+        public void ReloadImageEntries()
+        {
+
+            SetupImageList();
         }
 
 
         [UIAction("#post-parse")]
         public void PostParse()
         {
-            SetupList();
+            SetupTextList();
+            SetupFontList();
+            SetupImageList();
         }
         //public static string StripTMPTags(this string source) => source.Replace(@"<size", "<\u200B").Replace(@">", "\u200B>");
-        public void SetupList()
+        public void SetupTextList()
         {
             string line1 = "";
             string line2 = "";
             CellList.Clear();
-            fontListData.data.Clear();
-            imgListData.data.Clear();
             CellList.Add(defaultt);
             CellList.Add(random);
 
@@ -328,36 +338,8 @@ namespace CustomMenuText.ViewControllers
 
             }
 
-            foreach (var font in Plugin.FontNames)
-            {
-                CustomListTableData.CustomCellInfo fontCell;
-                if (font == Plugin.FontNames[0] || font == Plugin.FontNames[1])
-                {
-                    fontCell = new CustomListTableData.CustomCellInfo(font, "Built-In");
-                    fontListData.data.Add(fontCell);
-                }
-                else
-                {
-                    fontCell = new CustomListTableData.CustomCellInfo(font);
-                    fontListData.data.Add(fontCell);
-                }
-            }
-
-            foreach(var imageChunk in ImageManager.ImageChunks)
-            {
-                string yes;
-                if (!imageChunk.E)
-                    yes = "with Flickering E";
-                else
-                    yes = "";
-                var imgCell = new CustomListTableData.CustomCellInfo(imageChunk.path.Substring(Plugin.instance.IMG_PATH.Length), yes);
-                imgListData.data.Add(imgCell);
-            }
-
-
             textListData.tableView.ReloadData();
-            fontListData.tableView.ReloadData();
-            imgListData.tableView.ReloadData();
+            
             switch (Configuration.PluginConfig.Instance.SelectionType)
             {
                 case 0:
@@ -367,11 +349,44 @@ namespace CustomMenuText.ViewControllers
                     textListData.tableView.SelectCellWithIdx(1);
                     break;
                 case 2:
-                    textListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.SelectedEntry + 2);
+                    textListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.SelectedTextEntry + 2);
                     break;
             }
         }
-
+        public void SetupFontList()
+        {
+            fontListData.data.Clear();
+            foreach (var font in FontManager.FontList)
+            {
+                CustomListTableData.CustomCellInfo fontCell;
+                if (font.builtin)
+                {
+                    fontCell = new CustomListTableData.CustomCellInfo(font.name, "Built-In");
+                    fontListData.data.Add(fontCell);
+                }
+                else
+                {
+                    fontCell = new CustomListTableData.CustomCellInfo(font.name);
+                    fontListData.data.Add(fontCell);
+                }
+            }
+            fontListData.tableView.ReloadData();
+        }
+        public void SetupImageList()
+        {
+            imgListData.data.Clear();
+            foreach (var imageChunk in ImageManager.ImageChunks)
+            {
+                string yes;
+                if (!imageChunk.E)
+                    yes = "with Flickering E";
+                else
+                    yes = "";
+                var imgCell = new CustomListTableData.CustomCellInfo(imageChunk.name, yes);
+                imgListData.data.Add(imgCell);
+            }
+            imgListData.tableView.ReloadData();
+        }
         public void SelectCorrectCell(int selType, int choice)
         {
             switch (selType)

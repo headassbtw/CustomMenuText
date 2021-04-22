@@ -81,6 +81,76 @@ namespace CustomMenuText
 
     public static class FileUtils
     {
+        public static List<string[]> readFromFile(string relPath)
+        {
+            List<string[]> entriesInFile = new List<string[]>();
+
+            // Look for the custom text file
+            string gameDirectory = Environment.CurrentDirectory;
+            gameDirectory = gameDirectory.Replace('\\', '/');
+            if (File.Exists(gameDirectory + relPath))
+            {
+                var linesInFile = File.ReadLines(gameDirectory + relPath);
+
+                // Strip comments (all lines beginning with #)
+                linesInFile = linesInFile.Where(s => s == "" || s[0] != '#');
+                // Collect entries, splitting on empty lines
+                List<string> currentEntry = new List<string>();
+                foreach (string line in linesInFile)
+                {
+                    if (line == "")
+                    {
+                        entriesInFile.Add(currentEntry.ToArray());
+                        currentEntry.Clear();
+                    }
+                    else if (line.Contains("<diColor1>"))
+                    {
+                        currentEntry.Add(line.Replace("<diColor1>", Tools.ColorToHex(Plugin.diMainColor)));
+                    }
+                    else if (line.Contains("<diColor2>"))
+                    {
+                        currentEntry.Add(line.Replace("<diColor2>", Tools.ColorToHex(Plugin.diBottomColor)));
+                    }
+                    else
+                    {
+                        currentEntry.Add(line);
+                    }
+                }
+                if (currentEntry.Count != 0)
+                {
+                    // in case the last entry doesn't end in a newline
+                    entriesInFile.Add(currentEntry.ToArray());
+                }
+            }
+            else
+            {
+                // No custom text file found!
+                // Create the file and populate it with the default config
+                try
+                {
+                    using (FileStream fs = File.Create(gameDirectory + relPath))
+                    {
+                        Byte[] info = new UTF8Encoding(true).GetBytes(Plugin.DEFAULT_CONFIG
+                            // normalize newlines to CRLF
+                            .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
+                        fs.Write(info, 0, info.Length);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("[CustomMenuText] No custom text file found, and an error was encountered trying to generate a default one!");
+                    Console.WriteLine("[CustomMenuText] Error:");
+                    Console.WriteLine(ex);
+                    Console.WriteLine("[CustomMenuText] To use this plugin, manually create the file " + relPath + " in your Beat Saber install directory.");
+                    return entriesInFile;
+                }
+                // File was successfully created; load from it with a recursive call.
+                return readFromFile(relPath);
+            }
+
+            return entriesInFile;
+        }
+
         public static List<String> GetFileChunks(string path)
         {
             return Directory.GetDirectories(path).ToList();
@@ -100,7 +170,7 @@ namespace CustomMenuText
             return tex;
         }
 
-        public static CustomTypes.LogoImages LoadImagesFromChunk(string chunkPath)
+        public static LogoImages LoadImagesFromChunk(string chunkPath)
         {
             Texture2D s;
             Texture2D e;
@@ -112,14 +182,13 @@ namespace CustomMenuText
 
             if (File.Exists(chunkPath + "\\LogoE.png"))
                 li.ELogo = LoadPNG(chunkPath + "\\LogoE.png");
-            else if (!File.Exists(chunkPath + "\\Logoe.png"))
+            else if (!File.Exists(chunkPath + "\\LogoE.png"))
                 li.ELogo = null;
 
 
             if (File.Exists(chunkPath + "\\LogoBat.png"))
                 li.BatLogo = LoadPNG(chunkPath + "\\LogoBat.png");
 
-            li.path = chunkPath;
 
             return li;
         }
@@ -137,19 +206,34 @@ namespace CustomMenuText.CustomTypes
         saber
     }
 
+    public struct Font
+    {
+        public GameObject prefab;
+        public string name;
+        public bool builtin;
+
+        public Font(GameObject prefab, string name, bool builtIn = false)
+        {
+            this.prefab = prefab;
+            this.name = name;
+            this.builtin = builtIn;
+        }
+    }
+
+
     public struct LogoImages
     {
         public Texture2D BatLogo;
         public Texture2D SaberLogo;
         public Texture2D ELogo;
         public bool E;
-        public string path;
+        public string name;
 
-        public LogoImages(Texture2D BatLogo, Texture2D SaberLogo, string path, Texture2D ELogo = null, bool E = false)
+        public LogoImages(Texture2D BatLogo, Texture2D SaberLogo, string name, Texture2D ELogo = null, bool E = false)
         {
             this.BatLogo = BatLogo;
             this.SaberLogo = SaberLogo;
-            this.path = path;
+            this.name = name;
             if (ELogo)
             {
                 this.E = true;

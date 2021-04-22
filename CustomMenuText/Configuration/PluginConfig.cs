@@ -9,7 +9,8 @@ namespace CustomMenuText.Configuration
     {
         public static PluginConfig Instance { get; set; }
         public virtual int SelectionType { get; set; } = 0;
-        public virtual int SelectedEntry { get; set; } = 0;
+        public virtual int SelectedTextEntry { get; set; } = 0;
+        public virtual int SelectedImagesEntry { get; set; } = 0;
         public virtual bool UsingDiColors { get; set; } = false;
         public virtual bool OnlyInMainMenu { get; set; } = true;
         public virtual int Font { get; set; } = 0;
