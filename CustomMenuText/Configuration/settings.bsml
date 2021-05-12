@@ -1,6 +1,6 @@
 ﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
 	<settings-container>
-		<!--<bool-setting text="DiColors" value="diColors" hover-hint="Enable/Disable DiColors support (scuffed)" id="diColorOption"></bool-setting>-->
+		<bool-setting text="DiColors" value="diColors" hover-hint="Enable/Disable DiColors support" id="diColorOption"></bool-setting>
 		<bool-setting text="Only In Main Menu" value="onlyMain" hover-hint="Makes the menu text only show up in the main menu"></bool-setting>
 	</settings-container>
 </bg>

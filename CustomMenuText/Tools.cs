@@ -7,6 +7,10 @@ using UnityEngine;
 using System.Data;
 using System.IO;
 using CustomMenuText.CustomTypes;
+using System.Reflection;
+using IPA.Utilities;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace CustomMenuText
 {
@@ -32,15 +36,15 @@ namespace CustomMenuText
             return "<#" + hr + hg + hb + ">";
         }
 
-        public static GameObject FindLogo(CustomTypes.logo l)
+        public static GameObject FindLogo(logo l)
         {
             switch (l)
             {
-                case CustomTypes.logo.bat:
+                case logo.bat:
                     return GameObject.Find("Logo/BatLogo");
-                case CustomTypes.logo.a:
+                case logo.a:
                     return GameObject.Find("Logo/EFlickering/LogoE");
-                case CustomTypes.logo.saber:
+                case logo.saber:
                     return GameObject.Find("Logo/SaberLogo");
             }
             if (l == null)
@@ -49,15 +53,15 @@ namespace CustomMenuText
                 return null;
         }
 
-        public static void ReplaceTexture(CustomTypes.logo logoType, Texture2D texture)
+        public static void ReplaceTexture(logo logoType, Sprite texture)
         {
-            FindLogo(logoType).GetComponent<SpriteRenderer>().material.SetTexture("_MainTex", texture);
+            FindLogo(logoType).GetComponent<SpriteRenderer>().sprite = texture;
             
         }
-        public static Texture2D GetTexture(CustomTypes.logo logoType)
+        public static Sprite GetTexture(logo logoType)
         {
             Plugin.Log.Info("Finding Logo");
-            return (Texture2D)FindLogo(logoType).GetComponentInChildren<SpriteRenderer>().sprite.texture;
+            return (Sprite)FindLogo(logoType).GetComponentInChildren<SpriteRenderer>().sprite;
         }
 
         
@@ -87,6 +91,10 @@ namespace CustomMenuText
 
             // Look for the custom text file
             string gameDirectory = Environment.CurrentDirectory;
+            string customTag1 = "<diColor1>";
+            string customTag2 = "<diColor2>";
+            string maincol = Tools.ColorToHex(Plugin.diMainColor);
+            string botcol = Tools.ColorToHex(Plugin.diBottomColor);
             gameDirectory = gameDirectory.Replace('\\', '/');
             if (File.Exists(gameDirectory + relPath))
             {
@@ -103,17 +111,11 @@ namespace CustomMenuText
                         entriesInFile.Add(currentEntry.ToArray());
                         currentEntry.Clear();
                     }
-                    else if (line.Contains("<diColor1>"))
-                    {
-                        currentEntry.Add(line.Replace("<diColor1>", Tools.ColorToHex(Plugin.diMainColor)));
-                    }
-                    else if (line.Contains("<diColor2>"))
-                    {
-                        currentEntry.Add(line.Replace("<diColor2>", Tools.ColorToHex(Plugin.diBottomColor)));
-                    }
                     else
                     {
-                        currentEntry.Add(line);
+                        string _line = line.Replace(customTag1, maincol);
+                        _line = _line.Replace(customTag2, botcol);
+                        currentEntry.Add(_line);
                     }
                 }
                 if (currentEntry.Count != 0)
@@ -128,13 +130,7 @@ namespace CustomMenuText
                 // Create the file and populate it with the default config
                 try
                 {
-                    using (FileStream fs = File.Create(gameDirectory + relPath))
-                    {
-                        Byte[] info = new UTF8Encoding(true).GetBytes(Plugin.DEFAULT_CONFIG
-                            // normalize newlines to CRLF
-                            .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
-                        fs.Write(info, 0, info.Length);
-                    }
+                    FileUtils.WriteDefaultConfig();
                 }
                 catch (Exception ex)
                 {
@@ -155,26 +151,29 @@ namespace CustomMenuText
         {
             return Directory.GetDirectories(path).ToList();
         }
-        public static Texture2D LoadPNG(string filePath)
+        public static Sprite LoadPNG(string filePath)
         {
 
             Texture2D tex = null;
             byte[] fileData;
-
+            Sprite spr = null;
             if (File.Exists(filePath))
             {
                 fileData = File.ReadAllBytes(filePath);
                 tex = new Texture2D(2, 2);
                 tex.LoadRawTextureData(fileData); //..this will auto-resize the texture dimensions.
+
+
+                spr = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
             }
-            return tex;
+            return spr;
         }
 
         public static LogoImages LoadImagesFromChunk(string chunkPath)
         {
-            Texture2D s;
-            Texture2D e;
-            Texture2D b;
+            Sprite s;
+            Sprite e;
+            Sprite b;
             CustomTypes.LogoImages li = new CustomTypes.LogoImages();
 
             if(File.Exists(chunkPath + "\\LogoSaber.png"))
@@ -192,7 +191,16 @@ namespace CustomMenuText
 
             return li;
         }
-
+        public static void WriteDefaultConfig()
+        {
+            using (var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("CustomMenuText.DefaultTextFile.txt"))
+            {
+                using (var file = new FileStream(Path.Combine(UnityGame.UserDataPath, "CustomMenuText.txt"), FileMode.Create, FileAccess.Write))
+                {
+                    resource.CopyTo(file);
+                }
+            }
+        }
     }
 }
 
@@ -220,16 +228,15 @@ namespace CustomMenuText.CustomTypes
         }
     }
 
-
     public struct LogoImages
     {
-        public Texture2D BatLogo;
-        public Texture2D SaberLogo;
-        public Texture2D ELogo;
+        public Sprite BatLogo;
+        public Sprite SaberLogo;
+        public Sprite ELogo;
         public bool E;
         public string name;
 
-        public LogoImages(Texture2D BatLogo, Texture2D SaberLogo, string name, Texture2D ELogo = null, bool E = false)
+        public LogoImages(Sprite BatLogo, Sprite SaberLogo, string name, Sprite ELogo = null, bool E = false)
         {
             this.BatLogo = BatLogo;
             this.SaberLogo = SaberLogo;
@@ -242,7 +249,10 @@ namespace CustomMenuText.CustomTypes
             else
             {
                 this.E = false;
-                this.ELogo = Tools.ClearTexture2D(256, 256);
+
+                Sprite c = Sprite.Create(Tools.ClearTexture2D(256, 256), new Rect(0.0f, 0.0f, 256.0f, 256.0f), new Vector2(0.5f, 0.5f));
+
+                this.ELogo = c;
             }
 
 

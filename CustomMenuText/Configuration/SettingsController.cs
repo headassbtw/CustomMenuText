@@ -5,12 +5,12 @@ namespace CustomMenuText.Configuration
 {
     internal class CustomMenuTextSettingsUI : PersistentSingleton<CustomMenuTextSettingsUI>
     {
-        /*[UIValue("diColors")]
+        [UIValue("diColors")]
         public bool DiColors
         {
             get => PluginConfig.Instance.UsingDiColors;
             set => PluginConfig.Instance.UsingDiColors = value;
-        }*/
+        }
         [UIValue("onlyMain")]
         public bool OnlyMainMenu
         {

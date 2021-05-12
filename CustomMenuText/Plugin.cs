@@ -14,8 +14,8 @@ using System.Text;
 using IPA.Utilities;
 using System.Reflection;
 using System.Threading.Tasks;
-
-
+using HarmonyLib;
+using IPA.Loader;
 
 namespace CustomMenuText
 {
@@ -33,6 +33,7 @@ namespace CustomMenuText
 
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
+        internal static Harmony harmony;
 
         [Init]
         /// <summary>
@@ -44,6 +45,7 @@ namespace CustomMenuText
         {
             Instance = this;
             Log = logger;
+            harmony = new Harmony("com.headassbtw.custommenutext");
             Log.Info("CustomMenuText initialized.");
         }
 
@@ -54,58 +56,19 @@ namespace CustomMenuText
         public static Color MainColor = Color.red;
         public static Color BottomColor = new Color(0, 0.659f, 1);
 
-        /*public Config diConfig;
-        public Dictionary<string, DiColors.Config.ColorPair> colorPairs;*/
         #region BSIPA Config
         //Uncomment to use BSIPA's config
         [Init]
         public void InitWithConfig(Config conf)
         {
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
-            /*if (Configuration.PluginConfig.Instance.UsingDiColors)
-            {
-                getDi();
-            }
-            refreshDi();*/
-
-           
-
             Log.Debug("Config loaded");
             selection_type = Configuration.PluginConfig.Instance.SelectionType;
             choice = Configuration.PluginConfig.Instance.SelectedTextEntry;
         }
         #endregion
 
-        /*public void getDi()
-        {
-            diConfig = Config.GetConfigFor("DiColors");
-        }
-
-        public void refreshDi()
-        {
-            if (Configuration.PluginConfig.Instance.UsingDiColors)
-            {
-                try
-                {
-                    colorPairs.TryGetValue("Beat", out DiColors.Config.ColorPair beatPair);
-                    colorPairs.TryGetValue("Saber", out DiColors.Config.ColorPair saberPair);
-                    diMainColor = beatPair.Color;
-                    diBottomColor = saberPair.Color;
-                    MainColor = diMainColor;
-                    BottomColor = diBottomColor;
-                }
-                catch
-                {
-                    getDi();
-                    refreshDi();
-                }
-                
-                
-            }
-            
-        }*/
         
-
         public static Plugin instance;
 
         // path to the file to load text from
@@ -119,156 +82,19 @@ namespace CustomMenuText
         public static readonly string[] DEFAULT_TEXT = { "BEAT", "SABER" };
         public static readonly string[] EMPTY = { "", "" };
         public static string[] CURRENT_TEXT = { "FUCKIN", "BEES" };
+        // Logo Top Pos : 0.63, 18.61, 26.1
+        // Logo Bottom Pos : 0.63, 14, 26.1
+        public static Vector3 DefTopPos = new Vector3(0.63f, 18.61f, 26.1f);
+        public static Vector3 DefBotPos = new Vector3(0.63f, 14f, 26.1f);
+
 
         public static bool initalFunctionsFinished = false;
-        public const string DEFAULT_CONFIG =
-@"# Custom Menu Text v3.2.2
-# by Arti, heavily modified by headassbtw
-# Special Thanks: Kyle1413, Alphie
-#
-# Use # for comments!
-# Separate entries with empty lines; a random one will be picked each time the menu loads.
-# Entries with a number of lines other than 2 won't be colored by default.
-# Color them yourself with formatting!
-<#FF0000>B<#0080FF>S
-
-# Finally allowed again!
-MEAT
-SABER
-
-# You can override the colors even when the text is 2 lines, plus do a lot of other stuff!
-# (contributed by @Rolo)
-<size=+5><#ffffff>SBU<#ffff00>BBY
-            <size=5><#1E5142>eef freef.
-
-# Some more random messages:
-BEAT
-SAMER
-
-1337 
-SABER
-
-YEET
-SABER
-
-BEET
-SABER
-
-<size=+5>OWO
-   <size=5>what's this?
-
-BAT
-SAVER
-
-SATE
-BIEBER
-
-BEAR
-BEATS
-
-<#FF0000>BEAR <#0080FF>BEATS
-<#DDDDDD>BATTLESTAR GALACTICA
-
-BEE
-MOVIE
-
-MEME
-
-BEAM
-TASER
-
-ENVOY OF
-NEZPHERE
-
-BEER
-TASTER
-
-ABBA
-TREES
-
-EAT
-ASS
-
-BERATE
-ABS
-
-FLYING
-CARS
-
-BEATMANIA
-IIDX
-
-# requested by Reaxt
-<#8A0707>HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK HECK
-
-<size=+125><#FF0000>HECK
-
-HECK
-OFF
-
-Having problems?
-Ask in <#7289DA>#pc-help
-
-READ
-BOOKS
-
-# wrong colors
-<#0080FF>BEAT
-<#FF0000>SABER
-
-<#FF0000>HARDER
-<#0080FF>BETTER
-<#FF0000>FASTER
-<#0080FF>SABER
-
-DON'T
-PANIC
-
-STAN
-AUROS
-
-<line-height=75%><#cf7100>ARTI
-<#FF0000><size=+4><</size>3
-<#0080FF>JADE
-
-<i>slontey";
 
         // caches entries loaded from the file so we don't need to do IO every time the menu loads
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.2.2";
+        public string Version => "3.3.0";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -276,6 +102,11 @@ AUROS
 
         public System.Random random;
 
+        [OnDisable]
+        public void OnDisable()
+        {
+            harmony.UnpatchAll("com.headassbtw.custommenutext");
+        }
 
         [OnStart]
         public void OnApplicationStart()
@@ -283,17 +114,32 @@ AUROS
             IMG_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\";
             FONT_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\";
             InitializeImageFolder();
-            ImageManager.ImgInit();
             
-            new GameObject("CustomMenuTextController").AddComponent<CustomMenuTextController>();
+            choice = Configuration.PluginConfig.Instance.SelectedTextEntry;
+            try
+            {
+                PluginManager.GetPlugin("DiColors");
+                try
+                {
+                    harmony.PatchAll(Assembly.GetExecutingAssembly());
+                }catch(Exception e) { Plugin.Log.Critical("Harmony Patching Failed:"); Plugin.Log.Critical(e.ToString()); }
+
+            }
+            catch (Exception)
+            {
+                Log.Critical("DiColors is not installed, or was not loaded at the current time, disabling DiColors specific features.");
+                Configuration.PluginConfig.Instance.UsingDiColors = false;
+                SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
+            }
+            
+            //new GameObject("CustomMenuTextController").AddComponent<CustomMenuTextController>();
             instance = this;
             
             FontManager.FirstTimeFontLoad();
-            SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
-            //SceneManager.sceneLoaded += SceneManager_sceneLoaded;
-            BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu("Menu Text", "CustomMenuText.Configuration.settings.bsml", CustomMenuText.Configuration.CustomMenuTextSettingsUI.instance);
-            Views.UICreator.CreateMenu();
             
+            BeatSaberMarkupLanguage.Settings.BSMLSettings.instance.AddSettingsMenu("Menu Text", "CustomMenuText.Configuration.settings.bsml", Configuration.CustomMenuTextSettingsUI.instance);
+            Views.UICreator.CreateMenu();
+            reloadFile();
         }
 
         void InitializeImageFolder()
@@ -302,13 +148,25 @@ AUROS
                 Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText") + "\\");
             if (!Directory.Exists(FONT_PATH))
                 Directory.CreateDirectory(FONT_PATH);
-            if (!Directory.Exists(IMG_PATH))
-                    Directory.CreateDirectory(IMG_PATH);
+            //if (!Directory.Exists(IMG_PATH))
+            //        Directory.CreateDirectory(IMG_PATH);
         }
 
 
         public void YeetUpTheText()
         {
+            if (Configuration.PluginConfig.Instance.UsingDiColors)
+            {
+                MainColor = diMainColor;
+                BottomColor = diBottomColor;
+            }
+            else
+            {
+                MainColor = defaultMainColor;
+                BottomColor = defaultBottomColor;
+            }
+
+
             switch (Configuration.PluginConfig.Instance.SelectionType)
             {
                 case 0:
@@ -330,45 +188,43 @@ AUROS
             }
         }
         
-        public static void ApplyFont()
+        public void ApplyFont()
         {
-            GameObject.Destroy(textPrefab);
             Plugin.replaceLogo();
-            setText(CURRENT_TEXT);
+            YeetUpTheText();
         }
 
         private void SceneManagerOnActiveSceneChanged(Scene arg0, Scene arg1)
+        {
+            if (arg1.name.Contains("Menu")) // Only run in menu scene
+            {
+                TextInit();
+            }
+        }
+
+        public void TextInit()
         {
             if (Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText")?.transform.SetParent(defaultLogo.transform.parent.transform, true);
             if (Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText-Bot")?.transform.SetParent(defaultLogo.transform.parent.transform, true);
             if (!Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText")?.transform.SetParent(null, true);
             if (!Configuration.PluginConfig.Instance.OnlyInMainMenu) GameObject.Find("CustomMenuText-Bot")?.transform.SetParent(null, true);
-            //refreshDi();
             if (mainText != null) mainText.color = MainColor;
             if (bottomText != null) bottomText.color = BottomColor;
             defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
 
-
-
-            
-
-            //Log.Notice("Changed to scene " + arg1.name);
-            if (arg1.name.Contains("Menu")) // Only run in menu scene
+            if (allEntries == null)
             {
-                if (allEntries == null)
-                {
-                    reloadFile();
-                }
-                if (allEntries.Count == 0)
-                {
-                    Console.WriteLine("[CustomMenuText] File found, but it contained no entries! Leaving original logo intact.");
-                }
-                else
-                {
-                    YeetUpTheText();
-                    
-                }
+                reloadFile();
             }
+            if (allEntries.Count == 0)
+            {
+                Log.Notice("File found, but it contained no entries! Leaving original logo intact.");
+            }
+            else
+            {
+                YeetUpTheText();
+            }
+
         }
 
         /// <summary>
@@ -388,13 +244,6 @@ AUROS
             // Set the text
             setText(allEntries[entryPicked]);
         }
-
-        
-
-        
-
-
-        
         /// <summary>
         /// Replaces the logo in the main menu (which is an image and not text
         /// as of game version 0.12.0) with an editable TextMeshPro-based
@@ -409,16 +258,14 @@ AUROS
         public static void replaceLogo()
         {
             // Since 0.13.0, we have to create our TextMeshPros differently! You can't change the font at runtime, so we load a prefab with the right font from an AssetBundle. This has the side effect of allowing for custom fonts, an oft-requested feature.
-            if(textPrefab == null)
-            {
-                textPrefab = FontManager.FontList[Configuration.PluginConfig.Instance.Font].prefab;
-            } 
+
+            
 
             defaultLogo = FindUnityObjectsHelper.GetAllGameObjectsInLoadedScenes().Where(go => go.name == "Logo").FirstOrDefault();
 
             // Logo Top Pos : 0.63, 18.61, 26.1
             // Logo Bottom Pos : 0, 14, 26.1
-            /*if (mainText != null)
+            if (mainText != null)
             {
                 GameObject.Destroy(GameObject.Find("CustomMenuText"));
                 GameObject.Destroy(mainText);
@@ -430,7 +277,7 @@ AUROS
                 GameObject.Destroy(bottomText);
                 bottomText = null;
             }
-            */
+            textPrefab = FontManager.FontList[Configuration.PluginConfig.Instance.Font].prefab;
             //if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
             //if (mainText == null)
             {
@@ -449,7 +296,7 @@ AUROS
                 textObj.SetActive(true);
                 if (Configuration.PluginConfig.Instance.OnlyInMainMenu) textObj.transform.SetParent(defaultLogo.transform.parent.transform, true);
             }
-            mainText.rectTransform.position = new Vector3(0f, 18.61f, 26.1f);
+            mainText.rectTransform.position = DefTopPos;
 
             mainText.color = MainColor;
 
@@ -474,7 +321,7 @@ AUROS
                 if(Configuration.PluginConfig.Instance.OnlyInMainMenu) textObj2.transform.SetParent(defaultLogo.transform.parent.transform, true);
 
             }
-            bottomText.rectTransform.position = new Vector3(0f, 14f, 26.1f);
+            bottomText.rectTransform.position = DefBotPos;
             bottomText.color = BottomColor;
             bottomText.text = "SABER";
 
@@ -498,11 +345,16 @@ AUROS
         public static void setText(string[] lines)
         {
             // Set up the replacement logo
-            replaceLogo();
+            if(!mainText)
+                replaceLogo();
             CURRENT_TEXT = lines;
             if (lines.Length == 2)
             {
+                mainText.color = MainColor;
+                mainText.transform.position = DefTopPos;
                 mainText.text = lines[0];
+                bottomText.color = BottomColor;
+                bottomText.transform.position = DefBotPos;
                 bottomText.text = lines[1];
             }
             else
@@ -525,70 +377,23 @@ AUROS
 
         public void reloadFile()
         {
+            if(allEntries != null)
+                allEntries.Clear();
             allEntries = FileUtils.readFromFile(FILE_PATH);
             Configuration.PluginConfig.Instance.SelectionType = selection_type;
             Configuration.PluginConfig.Instance.SelectedTextEntry = choice;
         }
-
-        /// <summary>
-        /// Saves the current value of <see cref="allEntries"/> to the default config location.
-        /// Warning: effectively strips comments from the file!
-        /// </summary>
-        public void writeFile()
-        {
-            // join entries by two newlines and lines by one
-            string contents = String.Join("\n\n", allEntries.Select(e => String.Join("\n", e)));
-            string gameDirectory = Environment.CurrentDirectory;
-            gameDirectory = gameDirectory.Replace('\\', '/');
-            var path = gameDirectory + FILE_PATH;
-            try
-            {
-                using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
-                {
-                    Byte[] info = new UTF8Encoding(true).GetBytes(contents
-                        // normalize newlines to CRLF
-                        .Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n"));
-                    fs.Write(info, 0, info.Length);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[CustomMenuText] Failed to save config!");
-                Console.WriteLine("[CustomMenuText] Error:");
-                Console.WriteLine(ex);
-            }
-        }
-
-        /// <summary>
-        /// Overwrites the current config with the default and loads it.
-        /// </summary>
-        public void restoreDefaultConfig()
-        {
-            string gameDirectory = Environment.CurrentDirectory;
-            gameDirectory = gameDirectory.Replace('\\', '/');
-            var path = gameDirectory + FILE_PATH;
-            try
-            {
-                if (File.Exists(path)) File.Delete(path);
-                reloadFile();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[CustomMenuText] Failed to save config!");
-                Console.WriteLine("[CustomMenuText] Error:");
-                Console.WriteLine(ex);
-            }
-        }
-
-
 
         [OnExit]
         public void OnApplicationQuit()
         {
             Configuration.PluginConfig.Instance.SelectionType = selection_type;
             Configuration.PluginConfig.Instance.SelectedTextEntry = choice;
-            SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
-            //SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
+            try
+            {
+                SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
+            }
+            catch (Exception) { }
         }
 
 

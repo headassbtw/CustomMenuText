@@ -186,18 +186,7 @@ namespace CustomMenuText.ViewControllers
         }
     }
 
-    public static class StringTools
-    {
-        /*
-        * Original code by @lolPants, put into an Extension class.
-        * 
-        * The second replace is not necessary, but is there for completeness. If you need to strip TMP tags regularly,
-        * you can easily remove it for added performance.
-        */
-        public static string StripTMPTags(this string source) => source.Replace(@"<size", "<\u200B").Replace(@">", "\u200B>");
-    }
-
-
+    
     class TextSelectorViewController : BSMLResourceViewController
     {
         public int LastSelectedCell = 0;
@@ -207,7 +196,7 @@ namespace CustomMenuText.ViewControllers
         
         [UIComponent("TextList")] public CustomCellListTableData textListData;
         [UIComponent("FontList")] public CustomListTableData fontListData = new CustomListTableData();
-        [UIComponent("ImgList")] public CustomListTableData imgListData = new CustomListTableData();
+        //[UIComponent("ImgList")] public CustomListTableData imgListData = new CustomListTableData();
         [UIValue("contents")] public List<object> CellList = new List<object>();
         [UIAction("textSelect")]
         public void textSelect(TableView _, Cell cell)
@@ -248,13 +237,13 @@ namespace CustomMenuText.ViewControllers
         {
             //int row = fontListData.data.IndexOf(cell);
             Configuration.PluginConfig.Instance.Font = row;
-            Plugin.ApplyFont();
+            Plugin.instance.ApplyFont();
         }
-        [UIAction("imgSelect")]
+        /*[UIAction("imgSelect")]
         public void imgSelect(TableView _, int row)
         {
             Tools.ReplaceLogos(ImageManager.ImageChunks[row]);
-        }
+        }*/
 
         [UIAction("refreshTextEntries")]
         public void ReloadTextEntries()
@@ -268,12 +257,11 @@ namespace CustomMenuText.ViewControllers
             FontManager.FirstTimeFontLoad();
             SetupFontList();
         }
-        [UIAction("refreshImageEntries")]
+        /*[UIAction("refreshImageEntries")]
         public void ReloadImageEntries()
         {
-
             SetupImageList();
-        }
+        }*/
 
 
         [UIAction("#post-parse")]
@@ -281,7 +269,7 @@ namespace CustomMenuText.ViewControllers
         {
             SetupTextList();
             SetupFontList();
-            SetupImageList();
+            //SetupImageList();
         }
         //public static string StripTMPTags(this string source) => source.Replace(@"<size", "<\u200B").Replace(@">", "\u200B>");
         public void SetupTextList()
@@ -371,8 +359,9 @@ namespace CustomMenuText.ViewControllers
                 }
             }
             fontListData.tableView.ReloadData();
+            fontListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.Font);
         }
-        public void SetupImageList()
+        /*public void SetupImageList()
         {
             imgListData.data.Clear();
             foreach (var imageChunk in ImageManager.ImageChunks)
@@ -386,7 +375,7 @@ namespace CustomMenuText.ViewControllers
                 imgListData.data.Add(imgCell);
             }
             imgListData.tableView.ReloadData();
-        }
+        }*/
         public void SelectCorrectCell(int selType, int choice)
         {
             switch (selType)

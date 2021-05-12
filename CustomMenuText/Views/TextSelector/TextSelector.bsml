@@ -1,8 +1,8 @@
 ﻿<vertical xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'>
-	<horizontal pref-width="100" horizontal-fit="PreferredSize">
+	<!--<horizontal pref-width="100" horizontal-fit="PreferredSize">
 		<text text="s" align="Center" font-size="7" />
 		<tab-selector tab-tag="yo" />
-	</horizontal>
+	</horizontal>-->
 	<horizontal>
 		<vertical>
 			<page-button event-click='TextList#PageUp' direction='Up'/>
@@ -29,15 +29,15 @@
 			<list id='FontList' select-cell='fontSelect' vertical-fit='PreferredSize' list-width='45'/>
 			<page-button event-click='FontList#PageDown' direction='Down'/>
 		</vertical>
-		<vertical>
+		<!--<vertical>
 			<page-button event-click='ImgList#PageUp' direction='Up'/>
 			<list id='ImgList' select-cell='imgSelect' vertical-fit='PreferredSize' list-width='45'/>
 			<page-button event-click='ImgList#PageDown' direction='Down'/>
-		</vertical>
-	</horizontal>
+		</vertical>-->
+		</horizontal>
 	<horizontal>
 		<button text='Reload Text' on-click='refreshTextEntries'/>
 		<button text='Reload Fonts' on-click='refreshFontEntries'/>
-		<button text='Reload Images' on-click='refreshImageEntries'/>
+		<!--<button text='Reload Images' on-click='refreshImageEntries'/>-->
 	</horizontal>
 </vertical>
