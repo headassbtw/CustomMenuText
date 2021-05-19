@@ -6,4 +6,4 @@ Picks a random entry from a text file every time you enter the menu. The plugin 
 
 
 
-the unity project did get an update but most of the custom functions are broken as shit, because fuck you TextMeshPro, that's why
+the unity project got an update, and font creation is almost one-click now!
