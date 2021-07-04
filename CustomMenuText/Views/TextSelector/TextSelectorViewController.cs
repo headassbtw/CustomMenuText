@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -237,7 +238,8 @@ namespace CustomMenuText.ViewControllers
         {
             //int row = fontListData.data.IndexOf(cell);
             Configuration.PluginConfig.Instance.Font = row;
-            Plugin.instance.ApplyFont();
+            Plugin.mainText.font = FontManager.Fonts[row];
+            Plugin.bottomText.font = FontManager.Fonts[row];
         }
         /*[UIAction("imgSelect")]
         public void imgSelect(TableView _, int row)
@@ -343,23 +345,30 @@ namespace CustomMenuText.ViewControllers
         }
         public void SetupFontList()
         {
+            if (Configuration.PluginConfig.Instance.Font > FontManager.Fonts.Count)
+                Configuration.PluginConfig.Instance.Font = FontManager.Fonts.Count;
             fontListData.data.Clear();
-            foreach (var font in FontManager.FontList)
+            foreach (var font in FontManager.Fonts)
             {
+                string name = Path.GetFileNameWithoutExtension(font.sourceFontFile.name);
+                Plugin.Log.Notice($"adding font\"{name}\" to table");
+                
                 CustomListTableData.CustomCellInfo fontCell;
-                if (font.builtin)
+                if (name.ToLower().Equals("neontubes2") || name.ToLower().Equals("beon") || name.ToLower().Equals("teko"))
                 {
-                    fontCell = new CustomListTableData.CustomCellInfo(font.name, "Built-In");
+                    fontCell = new CustomListTableData.CustomCellInfo(name, "Built-In");
                     fontListData.data.Add(fontCell);
                 }
                 else
                 {
-                    fontCell = new CustomListTableData.CustomCellInfo(font.name);
+                    fontCell = new CustomListTableData.CustomCellInfo(name);
                     fontListData.data.Add(fontCell);
                 }
             }
             fontListData.tableView.ReloadData();
             fontListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.Font);
+            Plugin.mainText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
+            Plugin.bottomText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
         }
         /*public void SetupImageList()
         {

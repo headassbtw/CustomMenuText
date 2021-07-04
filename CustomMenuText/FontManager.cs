@@ -17,7 +17,6 @@ namespace CustomMenuText
         public static GameObject Prefab;
         public static TMP_FontAsset Font;
         public static List<TMP_FontAsset> Fonts;
-        public static OldFont[] FontList;
 
         public static GameObject loadPrefab(string fontName)
         {
@@ -31,7 +30,7 @@ namespace CustomMenuText
 
         public static Font embeddedFont(string fileName)
         {
-            string FontPath = Path.Combine(Application.temporaryCachePath, "CMT", fileName);
+            string FontPath = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Cache", fileName);
             Plugin.Log.Info($"Cache path is: {FontPath}");
             using (Stream ntf = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream("CustomMenuText.Fonts." + fileName))
@@ -48,14 +47,11 @@ namespace CustomMenuText
                 }
                 ntf.Close();
             }
-            return new Font(FontPath);
+
+            Font tf = new Font(FontPath);
+            return tf;
         }
 
-        internal static void LoadTTFFiles(string dir)
-        {
-            
-        }
-        
         public static TMP_FontAsset LoadFromTTF(string path)
         {
             var fnt = new Font(path);
@@ -84,17 +80,12 @@ namespace CustomMenuText
                     TTFs.Add(file);
                 }
             }
-
             foreach (var ttf in TTFs)
             {
                 fonts.Add(LoadFromTTF(ttf));
             }
-
             Fonts = fonts;
-            
-            
-            
-            
+
             Plugin.Log.Info("FontManager)  Font loading complete, ");
         }
     }

@@ -43,14 +43,10 @@ namespace CustomMenuText
         /// </summary>
         public void Init(IPALogger logger)
         {
-            
-            if(!Directory.Exists(Path.Combine(Application.temporaryCachePath, "CMT")))
-                Directory.CreateDirectory(Path.Combine(Application.temporaryCachePath, "CMT"));
             Instance = this;
             Log = logger;
             harmony = new Harmony("com.headassbtw.custommenutext");
             Log.Info("CustomMenuText initialized.");
-            
         }
 
         public static Color defaultMainColor = Color.red;
@@ -115,6 +111,8 @@ namespace CustomMenuText
         [OnStart]
         public void OnApplicationStart()
         {
+            if (!Directory.Exists(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Cache")))
+                Directory.CreateDirectory(Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Cache"));
             IMG_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Images") + "\\";
             FONT_PATH = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Fonts") + "\\";
             InitializeImageFolder();
@@ -269,22 +267,10 @@ namespace CustomMenuText
 
             // Logo Top Pos : 0.63, 18.61, 26.1
             // Logo Bottom Pos : 0, 14, 26.1
-            if (mainText != null)
-            {
-                GameObject.Destroy(GameObject.Find("CustomMenuText"));
-                GameObject.Destroy(mainText);
-                mainText = null;
-            }
-            if (bottomText != null)
-            {
-                GameObject.Destroy(GameObject.Find("CustomMenuText-Bot"));
-                GameObject.Destroy(bottomText);
-                bottomText = null;
-            }
-
-            textPrefab = FontManager.loadPrefab("NeonTubes");
-            //if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
-            //if (mainText == null)
+            if(!textPrefab)
+                textPrefab = FontManager.loadPrefab("NeonTubes");
+            if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
+            if (mainText == null)
             {
                 GameObject textObj = GameObject.Instantiate(textPrefab);
                 textObj.name = "CustomMenuText";
@@ -306,10 +292,10 @@ namespace CustomMenuText
             mainText.color = MainColor;
 
             mainText.text = "BEAT";
-            mainText.font = FontManager.Font;
+            mainText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
 
-            //if (bottomText == null) bottomText = GameObject.Find("CustomMenuText-Bot")?.GetComponent<TextMeshPro>();
-            //if (bottomText == null)
+            if (bottomText == null) bottomText = GameObject.Find("CustomMenuText-Bot")?.GetComponent<TextMeshPro>();
+            if (bottomText == null)
             {
                 GameObject textObj2 = GameObject.Instantiate(textPrefab);
                 textObj2.name = "CustomMenuText-Bot";
@@ -330,8 +316,8 @@ namespace CustomMenuText
             bottomText.rectTransform.position = DefBotPos;
             bottomText.color = BottomColor;
             bottomText.text = "SABER";
-            bottomText.font = FontManager.Font;
-
+            bottomText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
+            
 
             // Destroy Default Logo
 
@@ -400,10 +386,20 @@ namespace CustomMenuText
                 SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
             }
             catch (Exception) { }
-            if(Directory.Exists(Path.Combine(Application.temporaryCachePath, "CMT")))
-                Directory.Delete(Path.Combine(Application.temporaryCachePath, "CMT"));
+
+            string cachePath = Path.Combine(UnityGame.UserDataPath, "CustomMenuText", "Cache");
+            if (Directory.Exists(cachePath))
+            {
+                foreach (var st in Directory.GetFiles(cachePath))
+                {
+                    File.Delete(st);
+                }
+                Directory.Delete(cachePath);
+            }
+                
         }
 
+        
 
 
         
