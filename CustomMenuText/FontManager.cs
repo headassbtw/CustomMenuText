@@ -7,60 +7,95 @@ using CustomMenuText.CustomTypes;
 using UnityEngine;
 using System.IO;
 using System.Reflection;
+using IPA.Utilities;
+using TMPro;
 
 namespace CustomMenuText
 {
     class FontManager
     {
-        public static Font[] FontList;
+        public static GameObject Prefab;
+        public static TMP_FontAsset Font;
+        public static List<TMP_FontAsset> Fonts;
+        public static OldFont[] FontList;
 
-        public static Font loadBuiltInFont(string fontName, string displayName)
+        public static GameObject loadPrefab(string fontName)
         {
             Stream ntf = Assembly.GetExecutingAssembly().GetManifestResourceStream("CustomMenuText.Fonts." + fontName);
             AssetBundle neonBundle = AssetBundle.LoadFromStream(ntf);
             GameObject NeonTubesPrefab = neonBundle.LoadAsset<GameObject>("Text");
-            Font NeonTubes = new Font(NeonTubesPrefab, displayName, true);
             ntf.Close();
             neonBundle.Unload(false);
-            return NeonTubes;
+            return NeonTubesPrefab;
         }
 
+        public static Font embeddedFont(string fileName)
+        {
+            string FontPath = Path.Combine(Application.temporaryCachePath, "CMT", fileName);
+            Plugin.Log.Info($"Cache path is: {FontPath}");
+            using (Stream ntf = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("CustomMenuText.Fonts." + fileName))
+            {
+                if (File.Exists(FontPath))
+                {
+                    File.Delete(FontPath);
+                }
+                using (FileStream fileStream = new FileStream(FontPath, FileMode.CreateNew))
+                {
+                    for (int i = 0; i < ntf.Length; i++)
+                        fileStream.WriteByte((byte)ntf.ReadByte());
+                    fileStream.Close();
+                }
+                ntf.Close();
+            }
+            return new Font(FontPath);
+        }
 
+        internal static void LoadTTFFiles(string dir)
+        {
+            
+        }
+        
+        public static TMP_FontAsset LoadFromTTF(string path)
+        {
+            var fnt = new Font(path);
+            Font = TMP_FontAsset.CreateFontAsset(fnt);
+            return Font;
+        }
+        
+        
         public static void FirstTimeFontLoad()
         {
-            List<Font> tempFontList = new List<Font>();
-
+            List<TMP_FontAsset> fonts = new List<TMP_FontAsset>();
+            Prefab = loadPrefab("NeonTubes");
             #region inbuilt fonts
-
-            tempFontList.Add(loadBuiltInFont("NeonTubes", "Neon Tubes 2"));
-            tempFontList.Add(loadBuiltInFont("Beon", "Beon"));
-            tempFontList.Add(loadBuiltInFont("Teko", "Teko"));
+            fonts.Add(TMP_FontAsset.CreateFontAsset(embeddedFont("NeonTubes2.otf")));
+            fonts.Add(TMP_FontAsset.CreateFontAsset(embeddedFont("beon.ttf")));
+            fonts.Add(TMP_FontAsset.CreateFontAsset(embeddedFont("Teko.ttf")));
             #endregion
 
-
-            Plugin.Log.Notice("FontManager)  Searching " + Plugin.FONT_PATH + " For Font Files");
-            var fonts = Directory.GetFiles(Plugin.FONT_PATH);
-            Plugin.Log.Notice("FontManager)  " + fonts.Length + " External Fonts");
-            if (fonts.Length > 0)
+            string[] files = Directory.GetFiles(Path.Combine(UnityGame.UserDataPath,"CustomMenuText","Fonts"));
+            List<string> TTFs = new List<string>();
+            List<TMP_FontAsset> TTFFiles = new List<TMP_FontAsset>();
+            foreach (var file in files)
             {
-                for (int i = 0; i < fonts.Length; i++)
+                if (file.EndsWith(".ttf") || file.EndsWith(".otf"))
                 {
-                    
-                    AssetBundle fontBundle = AssetBundle.LoadFromFile(fonts[i]);
-                    GameObject prefab = fontBundle.LoadAsset<GameObject>("Text");
-                    prefab.name = fonts[i].Substring(Plugin.FONT_PATH.Length);
-                    Font tempFont = new Font(prefab, fonts[i].Substring(Plugin.FONT_PATH.Length));
-                    tempFontList.Add(tempFont);
-                    Plugin.Log.Notice("Adding Font " + tempFont.name);
-                    AssetBundle.Destroy(fontBundle);
-                    fontBundle.Unload(false);
-                    
+                    TTFs.Add(file);
                 }
-
             }
-            FontList = tempFontList.ToArray();
+
+            foreach (var ttf in TTFs)
+            {
+                fonts.Add(LoadFromTTF(ttf));
+            }
+
+            Fonts = fonts;
+            
+            
+            
+            
             Plugin.Log.Info("FontManager)  Font loading complete, ");
-            Plugin.Log.Info("FontManager)  Found " + FontList.Length + " Total Fonts.");
         }
     }
 }

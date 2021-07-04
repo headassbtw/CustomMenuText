@@ -214,13 +214,13 @@ namespace CustomMenuText.CustomTypes
         saber
     }
 
-    public struct Font
+    public struct OldFont
     {
         public GameObject prefab;
         public string name;
         public bool builtin;
 
-        public Font(GameObject prefab, string name, bool builtIn = false)
+        public OldFont(GameObject prefab, string name, bool builtIn = false)
         {
             this.prefab = prefab;
             this.name = name;

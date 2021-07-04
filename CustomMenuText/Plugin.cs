@@ -43,10 +43,14 @@ namespace CustomMenuText
         /// </summary>
         public void Init(IPALogger logger)
         {
+            
+            if(!Directory.Exists(Path.Combine(Application.temporaryCachePath, "CMT")))
+                Directory.CreateDirectory(Path.Combine(Application.temporaryCachePath, "CMT"));
             Instance = this;
             Log = logger;
             harmony = new Harmony("com.headassbtw.custommenutext");
             Log.Info("CustomMenuText initialized.");
+            
         }
 
         public static Color defaultMainColor = Color.red;
@@ -94,7 +98,7 @@ namespace CustomMenuText
         public static List<string[]> allEntries = null;
 
         public string Name => "Custom Menu Text";
-        public string Version => "3.3.0";
+        public string Version => "3.4.0";
 
         // Store the text objects so when we leave the menu and come back, we aren't creating a bunch of them
         public static TextMeshPro mainText;
@@ -277,7 +281,8 @@ namespace CustomMenuText
                 GameObject.Destroy(bottomText);
                 bottomText = null;
             }
-            textPrefab = FontManager.FontList[Configuration.PluginConfig.Instance.Font].prefab;
+
+            textPrefab = FontManager.loadPrefab("NeonTubes");
             //if (mainText == null) mainText = GameObject.Find("CustomMenuText")?.GetComponent<TextMeshPro>();
             //if (mainText == null)
             {
@@ -301,6 +306,7 @@ namespace CustomMenuText
             mainText.color = MainColor;
 
             mainText.text = "BEAT";
+            mainText.font = FontManager.Font;
 
             //if (bottomText == null) bottomText = GameObject.Find("CustomMenuText-Bot")?.GetComponent<TextMeshPro>();
             //if (bottomText == null)
@@ -324,8 +330,8 @@ namespace CustomMenuText
             bottomText.rectTransform.position = DefBotPos;
             bottomText.color = BottomColor;
             bottomText.text = "SABER";
+            bottomText.font = FontManager.Font;
 
-            
 
             // Destroy Default Logo
 
@@ -394,6 +400,8 @@ namespace CustomMenuText
                 SceneManager.activeSceneChanged -= SceneManagerOnActiveSceneChanged;
             }
             catch (Exception) { }
+            if(Directory.Exists(Path.Combine(Application.temporaryCachePath, "CMT")))
+                Directory.Delete(Path.Combine(Application.temporaryCachePath, "CMT"));
         }
 
 
