@@ -345,28 +345,42 @@ namespace CustomMenuText.ViewControllers
         }
         public void SetupFontList()
         {
+            //this should prevent selecting a font that doesn't exist
             if (Configuration.PluginConfig.Instance.Font > FontManager.Fonts.Count)
                 Configuration.PluginConfig.Instance.Font = FontManager.Fonts.Count;
             fontListData.data.Clear();
             foreach (var font in FontManager.Fonts)
             {
-                string name = Path.GetFileNameWithoutExtension(font.sourceFontFile.name);
-                Plugin.Log.Notice($"adding font\"{name}\" to table");
-                
                 CustomListTableData.CustomCellInfo fontCell;
-                if (name.ToLower().Equals("neontubes2") || name.ToLower().Equals("beon") || name.ToLower().Equals("teko"))
+                try
                 {
-                    fontCell = new CustomListTableData.CustomCellInfo(name, "Built-In");
-                    fontListData.data.Add(fontCell);
+                    string name = Path.GetFileNameWithoutExtension(font.sourceFontFile.name);
+                    Plugin.Log.Notice($"adding font\"{name}\" to table");
+                    
+                    if (name.ToLower().Equals("neontubes2") || name.ToLower().Equals("beon") || name.ToLower().Equals("teko"))
+                    {
+                        fontCell = new CustomListTableData.CustomCellInfo(name, "Built-In");
+                        fontListData.data.Add(fontCell);
+                    }
+                    else
+                    {
+                        fontCell = new CustomListTableData.CustomCellInfo(name);
+                        fontListData.data.Add(fontCell);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    fontCell = new CustomListTableData.CustomCellInfo(name);
+                    fontCell = new CustomListTableData.CustomCellInfo("Broken Font", "please remove it");
                     fontListData.data.Add(fontCell);
+                    Plugin.Log.Critical("Exception while adding font:");
+                    Console.WriteLine(e.ToString());
                 }
+                
             }
             fontListData.tableView.ReloadData();
-            fontListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.Font);
+            
+            try{fontListData.tableView.SelectCellWithIdx(Configuration.PluginConfig.Instance.Font);}
+            catch(IndexOutOfRangeException){Plugin.Log.Critical("Tried to select a font beyond the bounds of the list");}
             Plugin.mainText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
             Plugin.bottomText.font = FontManager.Fonts[Configuration.PluginConfig.Instance.Font];
         }
