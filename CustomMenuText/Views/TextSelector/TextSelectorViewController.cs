@@ -284,44 +284,60 @@ namespace CustomMenuText.ViewControllers
 
             foreach(var TextEntry in Plugin.allEntries)
             {
-                if(TextEntry.Length > 4)
+                try
                 {
-                    line1 = TextEntry[0];
-                    line1 = line1.Substring(0, 10);
-                    line2 = TextEntry[1];
-                    line2 = line2.Substring(0, 7) + "...";
+                    if (TextEntry.Length > 4)
+                    {
+                        line1 = TextEntry[0];
+                        line1 = line1.Substring(0, 10);
+                        line2 = TextEntry[1];
+                        line2 = line2.Substring(0, 7) + "...";
+                    }
+
+                    if (TextEntry.Length != 2)
+                    {
+                        string regex = "(<size[^a-b]{2,}?>)";
+                        string top = "";
+                        string bottom = "";
+                        for (int i = 0; i < TextEntry.Length; i++)
+                            if (i < TextEntry.Length / 2 && i != 0) top += " " + TextEntry[i];
+                            else if (i < TextEntry.Length / 2) top += TextEntry[i];
+                            else bottom += " " + TextEntry[i];
+
+                        line1 = Regex.Replace(top, regex, "");
+                        line2 = Regex.Replace(bottom, regex, "");
+
+                        if (Regex.Replace(line1, "(<[^x]{2,}?>)", "").Length > 20) line1 = line1.Substring(0, 20);
+                        if (Regex.Replace(line2, "(<[^x]{2,}?>)", "").Length > 20)
+                            line2 = line2.Substring(0, 17) + "...";
+                        //line1 = String.Join("\n", TextEntry);
+                        //line2 = "";
+                    }
+
+                    if (TextEntry.Length == 2)
+                    {
+                        string regex = "(<size[^a-b]{2,}?>)";
+
+
+
+                        line1 = Regex.Replace(TextEntry[0], regex, "");
+                        line2 = Regex.Replace(TextEntry[1], regex, "");
+                    }
+
+                    if (TextEntry.Length == 0)
+                    {
+                        line1 = "[Empty]";
+                        line2 = " ";
+                    }
+
+                    if (line1 != "" || line2 != "") line1 = Tools.ColorToHex(Plugin.MainColor) + line1;
+                    if (line1 != "" || line2 != "") line2 = Tools.ColorToHex(Plugin.BottomColor) + line2;
                 }
-                if(TextEntry.Length != 2)
+                catch (Exception e)
                 {
-                    string regex = "(<size[^a-b]{2,}?>)";
-                    string top = "";
-                    string bottom = "";
-                    for (int i = 0; i < TextEntry.Length; i++)
-                        if (i < TextEntry.Length / 2 && i != 0) top += " " + TextEntry[i];
-                        else if (i < TextEntry.Length / 2) top += TextEntry[i];
-                        else bottom += " " + TextEntry[i];
-
-                    line1 = Regex.Replace(top, regex, "");
-                    line2 = Regex.Replace(bottom, regex, "");
-
-                    if (Regex.Replace(line1, "(<[^x]{2,}?>)", "").Length > 20) line1 = line1.Substring(0, 20);
-                    if (Regex.Replace(line2, "(<[^x]{2,}?>)", "").Length > 20) line2 = line2.Substring(0, 17) + "...";
-                    //line1 = String.Join("\n", TextEntry);
-                    //line2 = "";
+                    line1 = "Failed to";
+                    line2 = "load preview";
                 }
-                if(TextEntry.Length == 2)
-                {
-                    string regex = "(<size[^a-b]{2,}?>)";
-
-                    
-
-                    line1 = Regex.Replace(TextEntry[0], regex, "");
-                    line2 = Regex.Replace(TextEntry[1], regex, "");
-                }
-
-
-                if (line1 != "" || line2 != "") line1 = Tools.ColorToHex(Plugin.MainColor) + line1;
-                if (line1 != "" || line2 != "") line2 = Tools.ColorToHex(Plugin.BottomColor) + line2;
 
                 Cell toAdd = new Cell(line1, line2);
                 CellList.Add(toAdd);
